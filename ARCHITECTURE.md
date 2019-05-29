@@ -121,7 +121,7 @@ If a node receives or sends a transaction, it forwards that transaction to neigh
 
 A node forwards as many trytes of a transaction as it knows (see [Flag Trit #0](#flag-trit-0)). If possible all trytes. If the `signatureOrMessage` field is unknown, it only forwards the other trytes. If neither the `signatureOrMessage` field nor the transaction essence is known, only the third part is forwarded. In both of these last two cases the inner state of the sponge function is submitted as well so that the receiver can recalculate the hashes despite not knowing all trytes. Make sure the receiver can determine which parts were sent to interpret the bytes correctly.
 
-**Transaction Fragmentation**: Due to the transaction size, forwarding messages are probably too big to be safely transfered (> MTU). The sender should fragments messages into packets and let the receiver reassamble them. Stream multiplexing can be used to associate the fragments. Also consider sending only submitting entire bundles because incomplete bundles should not enter the inner state of the Tangle anyways. A transaction cannot be fully validated before all previous transactions in the bundle are known because only then can the transaction type be validated (see [Flag Trit #0](#flag-trit-0)).
+**Transaction Fragmentation**: Due to the transaction size, forwarding messages are probably too big to be safely transfered (> MTU). The sender should fragments messages into packets and let the receiver reassamble them. Stream multiplexing can be used to associate the fragments. Also consider only submitting entire bundles because incomplete bundles should not enter the inner state of the Tangle anyways. A transaction cannot be fully validated before all previous transactions in the bundle are known because only then can the transaction type be validated (see [Flag Trit #0](#flag-trit-0)).
 
 #### Gossip Requests
 
@@ -135,7 +135,7 @@ The Sender is responsible for broadcasting transactions to neighbors and respond
 ### Receiver
 The receiver listens on the node socket for incoming packets, identifies the neighbor who submitted the packet and decodes them into transactions. If no neighbor could be identified, the packet is dropped without further processing to prevent DoS attacks.
 
-There are two possible ways to connect the Receiver to the Sender in order to broadcast new received transactions. The obvious is simply calling the Sender from the Receiver. Another more modular way, where the receiver must not be aware of the sender, is to register the Sender as a gossip listener (see Gossip). Another advantage of the latter approach is that this allows EEE to be used for submitting new transactions. Thus `submit` in the IXI can be projected onto the `submitEffect()` method through a helper method (which is available for IXI modules but not part of the actual IXI interface). I recommend this to further minimize the IXI. But most importantly, this approach allows gossip preprocessor to intervene into the forwarding of transactions (see Gossip Preprocessors).
+There are two possible ways to connect the Receiver to the Sender in order to broadcast new received transactions. The obvious solution is simply calling the Sender from the Receiver. Another more modular way, where the receiver must not be aware of the sender, is to register the Sender as a gossip listener (see Gossip). Another advantage of the latter approach is that this allows EEE to be used for submitting new transactions. Thus `submit` in the IXI can be projected onto the `submitEffect()` method through a helper method (which is available for IXI modules but not part of the actual IXI interface). I recommend this to further minimize the IXI. But most importantly, this approach allows gossip preprocessor to intervene into the forwarding of transactions (see Gossip Preprocessors).
 
 #### Avoid Redundant Decoding and Hashing
 Quite frequently the same transaction is received multiple times from different neighbors. For performance reasons, one should check whether the transaction has already been received before decoding the bytes to trytes and calculating the hash of the transaction.
@@ -193,12 +193,8 @@ Illustration of an Ict node with two installed modules:
 
 ![](https://raw.githubusercontent.com/mikrohash/ict2/master/images/modules.png?token=ACY7L3ITCTNDJ63QYD6AC4S4ZVK2Q)
 
-###The power of modules
-
-It's very important to understand what power a module has.
-Since modules extend the Ict core, they see the same Tangle. They could, however, look at the same Tangle from a different perspective and follow its own specific set of rules (e.g. following specific milestones).
-
-The power lies in when many nodes have the same module installed. All these modules view the Tangle from the same perspective and could follow their own consensus rules. 
+### Swarm Intelligence
+Since modules extend the Ict core, they operate on the same Tangle. Modules can look at the Tangle from a custom perspective and follow their own specific set of rules, for example by enabling a certain kind of consensus. Modules make mostly sense when multiple nodes have the same module installed because then they can use the Tangle to interact with each other and enable swarm behavior.
 
 ### Transaction Related Functionality
 
@@ -206,7 +202,7 @@ The power lies in when many nodes have the same module installed. All these modu
 | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | findTransactionByHash(hash)        | Returns the transaction with the specific hash from the local tangle.                                                               |
 | findTransactionsByAddress(address) | Returns all transactions with the specific address.                                                                                 |
-| findTransactionByTag(tag)          | Returns all transactions with the specific tag.                                                                                     |
+| findTransactionsByTag(tag)          | Returns all transactions with the specific tag.                                                                                     |
 | submit(transaction)                | Adds a new transaction to the local tangle and broadcasts it to the network. You might project this function to EEE (see Receiver). |
 
 ### EEE Related Functionality
