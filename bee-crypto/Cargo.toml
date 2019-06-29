@@ -1,0 +1,23 @@
+[package]
+name = "bee-crypto"
+version = "0.1.0"
+authors = ["Yu Wei Wu <wusyong9104@gmail.com>"]
+edition = "2018"
+
+[lib]
+name = "bee_crypto"
+
+[dependencies]
+lazy_static = "1.3.0"
+failure = "0.1"
+crunchy = "0.2"
+iota-constants = "0.2.0"
+iota-conversion = "0.2.0"
+
+[dev-dependencies]
+criterion = "0.2"
+rand = "0.6"
+
+[[bench]]
+name = "troika_benchmark"
+harness = false
